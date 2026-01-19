@@ -1,37 +1,43 @@
 import { GoogleGenAI } from "@google/genai";
 
-export class GeminiService {
-  static async generateLogo(description: string): Promise<string> {
-    const apiKey = process.env.API_KEY;
-    if (!apiKey) throw new Error("API_KEY_MISSING");
+// Fix: Follow @google/genai guidelines for client initialization and image part extraction
+export const generateLogo = async (extraPrompt: string) => {
+  // Fix: Use the API key directly from process.env.API_KEY as per guidelines
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const prompt = `
+    MODERN MINIMALIST LOGO for 'NeuroSpark Ventures'. 
+    An accelerator for ADHD entrepreneurs.
+    SYMBOL: A fusion of a brain synapse and a lightning bolt.
+    STYLE: High-tech, vector, clean lines, glowing neon purple and cyan.
+    BACKGROUND: Solid Black.
+    NO TEXT. NO WORDS.
+    Context: ${extraPrompt}
+  `;
 
-    const ai = new GoogleGenAI({ apiKey });
-    const prompt = `
-      ULTRA MODERN LOGO DESIGN for a company called 'NeuroSpark'.
-      CONCEPT: A startup accelerator for ADHD minds.
-      VISUAL: A stylized brain synapse meeting an electric spark. 
-      STYLE: Minimalist, vector art, glowing neon cyan and vibrant purple.
-      BACKGROUND: Solid black. 
-      FEEL: High energy, professional, tech-forward, divergent thinking.
-      NO TEXT, NO LETTERS. Only the symbol.
-      ADDITIONAL DETAIL: ${description}
-    `;
-
-    try {
-      const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash-image',
-        contents: { parts: [{ text: prompt }] },
-        config: { imageConfig: { aspectRatio: "1:1" } }
-      });
-
-      const imagePart = response.candidates?.[0]?.content?.parts.find(p => p.inlineData);
-      if (imagePart?.inlineData) {
-        return `data:image/png;base64,${imagePart.inlineData.data}`;
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash-image',
+      contents: { parts: [{ text: prompt }] },
+      config: {
+        imageConfig: {
+          aspectRatio: "1:1"
+        }
       }
-      throw new Error("No image data");
-    } catch (error) {
-      console.error("Error generating logo:", error);
-      throw error;
+    });
+
+    // Fix: Correctly iterate through parts to find the image data part as per guidelines
+    const candidate = response.candidates?.[0];
+    if (candidate?.content?.parts) {
+      for (const part of candidate.content.parts) {
+        if (part.inlineData) {
+          return `data:image/png;base64,${part.inlineData.data}`;
+        }
+      }
     }
+    
+    throw new Error("No se pudo extraer la imagen de la respuesta");
+  } catch (error) {
+    console.error("Gemini Error:", error);
+    throw error;
   }
-}
+};
