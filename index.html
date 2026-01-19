@@ -14,7 +14,7 @@
             background-color: #020617;
             color: #f9fafb;
             margin: 0;
-            overflow: hidden;
+            overflow-x: hidden;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
         .animate-spin-custom { animation: spin 1s linear infinite; }
@@ -30,6 +30,10 @@
             transition: opacity 0.5s ease;
         }
     </style>
+    <script>
+        // Shim para evitar que el navegador falle al encontrar process.env
+        window.process = { env: { NODE_ENV: 'production' } };
+    </script>
     <script type="importmap">
 {
   "imports": {
