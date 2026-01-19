@@ -11,10 +11,10 @@
     <style>
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #020617; /* Slate 950 */
+            background-color: #020617; /* Slate 950 (Azul muy oscuro, casi negro) */
             color: #f9fafb;
-            overflow-x: hidden;
             margin: 0;
+            overflow-x: hidden;
         }
         @keyframes pulse-slow {
             0%, 100% { opacity: 0.2; transform: scale(1); }
@@ -29,23 +29,6 @@
         }
         .animate-float {
             animation: float 6s ease-in-out infinite;
-        }
-        ::selection {
-            background-color: #a855f7;
-            color: white;
-        }
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #000;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #222;
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #333;
         }
     </style>
 <script type="importmap">
@@ -63,8 +46,12 @@
 </script>
 </head>
 <body>
-    <div id="root"></div>
-    <!-- Vite se encarga de procesar este archivo y convertirlo en algo que el navegador entienda perfectamente -->
+    <div id="root">
+        <!-- Este texto solo se ve si React falla al cargar -->
+        <div style="display: flex; justify-content: center; align-items: center; height: 100vh; color: #444;">
+            Cargando NeuroSpark...
+        </div>
+    </div>
     <script type="module" src="/index.tsx"></script>
 </body>
 </html>
