@@ -1,17 +1,24 @@
 import { GoogleGenAI } from "@google/genai";
 
-// Fix: Follow @google/genai guidelines for client initialization and image part extraction
 export const generateLogo = async (extraPrompt: string) => {
-  // Fix: Use the API key directly from process.env.API_KEY as per guidelines
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  // En algunos entornos de despliegue, process.env puede estar vacío si no se configura bien el build
+  const apiKey = process.env.API_KEY;
+  
+  if (!apiKey || apiKey === "undefined" || apiKey === "" || apiKey === "YOUR_API_KEY") {
+    console.error("API_KEY no detectada en process.env");
+    throw new Error("API_KEY no detectada. Asegúrate de haber hecho 'Redeploy' en Vercel tras guardar la variable.");
+  }
+
+  const ai = new GoogleGenAI({ apiKey });
+  
   const prompt = `
-    MODERN MINIMALIST LOGO for 'NeuroSpark Ventures'. 
-    An accelerator for ADHD entrepreneurs.
-    SYMBOL: A fusion of a brain synapse and a lightning bolt.
-    STYLE: High-tech, vector, clean lines, glowing neon purple and cyan.
-    BACKGROUND: Solid Black.
-    NO TEXT. NO WORDS.
-    Context: ${extraPrompt}
+    MASTERPIECE LOGO for 'NeuroSpark Ventures'. 
+    Visual style: High-tech cyberpunk, geometric brain, lightning energy bolt.
+    Colors: Electric cyan and deep purple neon gradients.
+    Background: Solid pure black.
+    Quality: Vector art, sharp lines, professional brand identity.
+    NO TEXT, NO LETTERS, NO WORDS.
+    Additional style: ${extraPrompt}
   `;
 
   try {
@@ -25,7 +32,6 @@ export const generateLogo = async (extraPrompt: string) => {
       }
     });
 
-    // Fix: Correctly iterate through parts to find the image data part as per guidelines
     const candidate = response.candidates?.[0];
     if (candidate?.content?.parts) {
       for (const part of candidate.content.parts) {
@@ -35,9 +41,18 @@ export const generateLogo = async (extraPrompt: string) => {
       }
     }
     
-    throw new Error("No se pudo extraer la imagen de la respuesta");
-  } catch (error) {
-    console.error("Gemini Error:", error);
-    throw error;
+    throw new Error("La IA no devolvió una imagen. Inténtalo de nuevo.");
+  } catch (error: any) {
+    console.error("Gemini Error Detail:", error);
+    
+    if (error.message?.includes("API key not found")) {
+      throw new Error("Error de Autenticación: La API Key no es válida o no se ha propagado correctamente.");
+    }
+    
+    if (error.message?.includes("safety")) {
+      throw new Error("El prompt fue bloqueado por filtros de seguridad. Intenta con palabras más simples.");
+    }
+
+    throw new Error(error.message || "Error al conectar con Gemini AI.");
   }
 };
