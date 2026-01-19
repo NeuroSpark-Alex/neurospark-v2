@@ -1,44 +1,36 @@
 import { GoogleGenAI } from "@google/genai";
 
 export class GeminiService {
-  private static getApiKey(): string {
-    // Intentamos obtener la clave de diferentes fuentes posibles
-    const key = (window as any).process?.env?.API_KEY || (import.meta as any).env?.VITE_API_KEY || "";
-    return key;
-  }
-
-  static async generateLogoVariation(prompt: string): Promise<string> {
-    const apiKey = this.getApiKey();
-    
-    if (!apiKey || apiKey === "") {
-      throw new Error("API_KEY no detectada. Asegúrate de añadirla en Settings -> Environment Variables en Vercel.");
-    }
+  static async generateLogo(description: string): Promise<string> {
+    const apiKey = process.env.API_KEY;
+    if (!apiKey) throw new Error("API_KEY_MISSING");
 
     const ai = new GoogleGenAI({ apiKey });
-    
-    const fullPrompt = `MASTERPIECE LOGO. Brand: 'NeuroSpark'. 
-    Visual: A minimalist human brain made of glowing electric blue and purple neon circuits. 
-    Style: Futuristic, tech, 3D render, dark background. 
-    NO TEXT. ${prompt}`;
+    const prompt = `
+      ULTRA MODERN LOGO DESIGN for a company called 'NeuroSpark'.
+      CONCEPT: A startup accelerator for ADHD minds.
+      VISUAL: A stylized brain synapse meeting an electric spark. 
+      STYLE: Minimalist, vector art, glowing neon cyan and vibrant purple.
+      BACKGROUND: Solid black. 
+      FEEL: High energy, professional, tech-forward, divergent thinking.
+      NO TEXT, NO LETTERS. Only the symbol.
+      ADDITIONAL DETAIL: ${description}
+    `;
 
     try {
       const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash-image',
-        contents: { parts: [{ text: fullPrompt }] },
-        config: {
-          imageConfig: {
-            aspectRatio: "1:1"
-          }
-        },
+        contents: { parts: [{ text: prompt }] },
+        config: { imageConfig: { aspectRatio: "1:1" } }
       });
 
-      const part = response.candidates?.[0]?.content?.parts.find(p => p.inlineData);
-      if (part?.inlineData) {
-        return `data:image/png;base64,${part.inlineData.data}`;
+      const imagePart = response.candidates?.[0]?.content?.parts.find(p => p.inlineData);
+      if (imagePart?.inlineData) {
+        return `data:image/png;base64,${imagePart.inlineData.data}`;
       }
-      throw new Error("La IA no devolvió una imagen.");
+      throw new Error("No image data");
     } catch (error) {
-      console.error("Gemini Error:", error);
+      console.error("Error generating logo:", error);
       throw error;
     }
   }
