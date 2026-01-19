@@ -1,19 +1,25 @@
 import { GoogleGenAI } from "@google/genai";
 
 export class GeminiService {
+  private static getApiKey(): string {
+    // Intentamos obtener la clave de diferentes fuentes posibles
+    const key = (window as any).process?.env?.API_KEY || (import.meta as any).env?.VITE_API_KEY || "";
+    return key;
+  }
+
   static async generateLogoVariation(prompt: string): Promise<string> {
-    const apiKey = process.env.API_KEY;
-    if (!apiKey) {
-      throw new Error("API_KEY no configurada. Por favor, añádela en Vercel.");
+    const apiKey = this.getApiKey();
+    
+    if (!apiKey || apiKey === "") {
+      throw new Error("API_KEY no detectada. Asegúrate de añadirla en Settings -> Environment Variables en Vercel.");
     }
 
     const ai = new GoogleGenAI({ apiKey });
     
     const fullPrompt = `MASTERPIECE LOGO. Brand: 'NeuroSpark'. 
     Visual: A minimalist human brain made of glowing electric blue and purple neon circuits. 
-    One part of the brain is exploding into geometric sparks (representing ADHD energy).
-    Style: Futuristic, high-end tech, 3D render, dark background. 
-    NO TEXT. HIGH CONTRAST. ${prompt}`;
+    Style: Futuristic, tech, 3D render, dark background. 
+    NO TEXT. ${prompt}`;
 
     try {
       const response = await ai.models.generateContent({
@@ -30,7 +36,7 @@ export class GeminiService {
       if (part?.inlineData) {
         return `data:image/png;base64,${part.inlineData.data}`;
       }
-      throw new Error("La IA no generó una imagen.");
+      throw new Error("La IA no devolvió una imagen.");
     } catch (error) {
       console.error("Gemini Error:", error);
       throw error;
