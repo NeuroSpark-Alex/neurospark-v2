@@ -2,18 +2,12 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 
-const container = document.getElementById('root');
-
-if (container) {
-  const root = ReactDOM.createRoot(container);
+const rootElement = document.getElementById('root');
+if (rootElement) {
+  const root = ReactDOM.createRoot(rootElement);
+  root.render(<App />);
   
-  root.render(
-    <React.StrictMode>
-      <App />
-    </React.StrictMode>
-  );
-  
-  // Quitar el loader cuando React esté listo
+  // Quitar el loader inmediatamente al montar
   const loader = document.getElementById('loading-screen');
   if (loader) {
     loader.style.opacity = '0';
